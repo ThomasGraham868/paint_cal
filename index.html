@@ -1,0 +1,225 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paint Calculator</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            padding: 20px;
+            margin: 0;
+            background-image: url('paint-splash.jpg'); /* Add the URL of your paint splash image here */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        h1 {
+            text-align: center;
+            color: #f1c40f;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+        }
+        button {
+            background-color: #f1c40f;
+            color: #333;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #d4ac0d;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+        }
+        .catalogue {
+            margin-top: 20px;
+        }
+        .catalogue h2 {
+            text-align: center;
+            color: #f1c40f;
+        }
+        .catalogue ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .catalogue li {
+            margin-bottom: 10px;
+            background-color: #333;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .catalogue li strong {
+            display: block;
+            color: #f1c40f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Paint Calculator</h1>
+        <div class="form-group">
+            <label for="system">Measurement System</label>
+            <select id="system">
+                <option value="I">Imperial (feet)</option>
+                <option value="M">Metric (meters)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="width">Width of the Wall</label>
+            <input type="number" id="width" placeholder="Enter width">
+        </div>
+        <div class="form-group">
+            <label for="height">Height of the Wall</label>
+            <input type="number" id="height" placeholder="Enter height">
+        </div>
+        <div class="form-group">
+            <label for="brand">Brand of Paint</label>
+            <input type="text" id="brand" placeholder="Enter brand">
+        </div>
+        <div class="form-group">
+            <label for="color">Color of Paint</label>
+            <input type="text" id="color" placeholder="Enter color">
+        </div>
+        <button onclick="getQuote()">Calculate</button>
+        <div class="result" id="result"></div>
+    </div>
+    <div class="container catalogue">
+        <h2>Available Paints and Prices (per gallon)</h2>
+        <div id="catalogue"></div>
+    </div>
+
+    <script>
+        const prices = {
+            'Benjamin Moore (Ben)': {
+                "Opulence - matte, (white)": 55.99,
+                "Silver Satin - matte, (gray)": 55.99,
+                "Canvas - matte, (neutral)": 55.99,
+                "Jack Frost - matte (blue)": 55.99,
+            },
+            'Behr - (Premium Plus)': {
+                "Polar Bear - matte, (white)": 32.98,
+                "Platinum - matte, (gray)": 35.98,
+                "Dove - matte, (neutral)": 37.98,
+                "Charismatic Sky - matte, (blue)": 35.98,
+            },
+            'Valspar - (Signature)': {
+                "Ultra White - matte (white)": 45.98,
+                "Gravity - matte, (gray)": 48.98,
+                "Cream in My Coffee - matte, (neutral)": 42.98,
+                "Soul Blue - matte, (blue)": 48.98,
+            },
+            'Glidden - (Spread)': {
+                "White - eggshell, (white)": 24.48,
+                "Ghost Whisperer - flat, (gray)": 27.48,
+                "Pony Tail - flat, (biege)": 27.48,
+                "Aquamarine Dream - flat, (blue)": 25.97,
+            }
+        };
+
+        function calculateArea(width, height) {
+            return width * height;
+        }
+
+        function calculateGallons(area, coveragePerGallon = 350) {
+            return area / coveragePerGallon;
+        }
+
+        function calculatePrice(gallons, pricePerGallon) {
+            return gallons * pricePerGallon;
+        }
+
+        function findClosestMatch(input, options) {
+            const regex = new RegExp(input.trim().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'), 'i');
+            return options.find(option => regex.test(option)) || null;
+        }
+
+        function showCatalogue() {
+            const catalogueDiv = document.getElementById('catalogue');
+            let catalogueHTML = '';
+            for (const brand in prices) {
+                catalogueHTML += `<ul><li><strong>${brand}:</strong>`;
+                for (const [color, price] of Object.entries(prices[brand])) {
+                    catalogueHTML += `<li>${color}: $${price} per gallon</li>`;
+                }
+                catalogueHTML += '</ul></li>';
+            }
+            catalogueDiv.innerHTML = catalogueHTML;
+        }
+
+        function getQuote() {
+            const system = document.getElementById('system').value.toUpperCase();
+            const conversionFactor = system === 'I' ? 1 : 10.764;  // 1 square meter = 10.764 square feet
+
+            const width = parseFloat(document.getElementById('width').value);
+            const height = parseFloat(document.getElementById('height').value);
+            const area = calculateArea(width, height) * (system === 'I' ? 1 : conversionFactor);
+
+            let brand = document.getElementById('brand').value;
+            let color = document.getElementById('color').value;
+
+            const brandOptions = Object.keys(prices);
+            brand = findClosestMatch(brand, brandOptions);
+            
+            if (!brand) {
+                document.getElementById('result').innerText = 'Invalid brand. Please check the catalogue and try again.';
+                return;
+            }
+
+            const colorOptions = Object.keys(prices[brand]);
+            color = findClosestMatch(color, colorOptions);
+
+            if (!color) {
+                document.getElementById('result').innerText = 'Invalid color. Please check the catalogue and try again.';
+                return;
+            }
+
+            const pricePerGallon = prices[brand][color];
+            const gallonsNeeded = Math.ceil(calculateGallons(area));
+            const totalPrice = calculatePrice(gallonsNeeded, pricePerGallon);
+
+            document.getElementById('result').innerHTML = `
+                <p><strong>Paint Brand:</strong> ${brand}</p>
+                <p><strong>Paint Color:</strong> ${color}</p>
+                <p><strong>Area to Paint:</strong> ${area.toFixed(2)} sq ft</p>
+                <p><strong>Gallons of Paint Needed:</strong> ${gallonsNeeded}</p>
+                <p><strong>Total Cost:</strong> $${totalPrice.toFixed(2)}</p>
+            `;
+        }
+
+        // Show catalogue on page load
+        showCatalogue();
+    </script>
+</body>
+</html>
