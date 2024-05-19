@@ -21,4 +21,4 @@ A simple web application that calculates the amount of paint needed for a wall a
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/paint-calculator.git
+   git clone https://github.com/ThomasGraham868/paint-calculator.git
